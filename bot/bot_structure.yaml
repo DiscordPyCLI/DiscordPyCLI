@@ -75,19 +75,19 @@ root:
 
       {config}
 
-      {bot}{banhammer}
+      {bot}
 
       {cogs}
 
       {main}
     bot: |
-      class {bot_name}(commands.Bot):
+      class {bot_name}({bases}):
           def __init__(self, **options):
               super().__init__(cmd_prefix, description=description{help_cmd}, **options)
-
+              {banhammer_setup}
           async def on_ready(self):
               print(f"{{self.user.name}} is running.")
-
+              {banhammer_ready}
           async def on_command_error(self, ctx: commands.Context, error: Exception):
               if isinstance(error, discord.ext.commands.errors.CommandNotFound):
                   pass
@@ -103,21 +103,21 @@ root:
               embed.set_footer(text=f"{bot_name}", icon_url=self.user.avatar_url)
               embed.timestamp = datetime.utcnow()
 
-              return embed
+              return embed{banhammer_events}
     bot-basic: |
       bot = commands.Bot(cmd_prefix, description=description{help_cmd})
-
+      {banhammer_setup}
       @bot.event
       async def on_ready():
           print(f"{{bot.user.name}} is running.")
-
+          {banhammer_ready}
       @bot.event
       async def on_command_error(self, ctx: commands.Context, error: Exception):
           if isinstance(error, discord.ext.commands.errors.CommandNotFound):
               pass
           else:
               await ctx.message.channel.send(error)
-              traceback.print_tb(error.__traceback__)
+              traceback.print_tb(error.__traceback__){banhammer_events}
     main: |
       if __name__ == "__main__":
           bot = {bot_name}()
@@ -172,3 +172,33 @@ root:
     .env: |
       TOKEN={token}
       CLIENT_ID={client_id}
+  banhammer:
+    setup: |+
+      reddit = apraw.Reddit(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
+                            password=PASSWORD, username=USERNAME, user_agent=USER_AGENT)
+      \t\tBanhammer.__init__(self, reddit, bot=self)\n
+    setup-basic: |
+      \n
+      reddit = apraw.Reddit(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
+                            password=PASSWORD, username=USERNAME, user_agent=USER_AGENT)
+      bh = banhammer.Banhammer(reddit, bot=bot)
+      \n
+    events: |
+      \n
+      \t@EventHandler.new()
+      \t@EventHandler.comments()
+      \tasync def handle_new(self, p: RedditItem):
+          \tmsg = await self.get_channel(CHANNEL_ID).send(embed=await p.get_embed(embed_template=self.embed))
+          \tawait p.add_reactions(msg)
+    events-basic: |
+      \n
+      @bh.new()
+      async def handle_new(p: RedditItem):
+          msg = await bot.get_channel(CHANNEL_ID).send(embed=await p.get_embed())
+          await p.add_reactions(msg)
+    ready: |
+      await self.add_subreddits(SUBNAME)
+      \t\tBanhammer.start(self)\n
+    ready-basic: |
+      \tawait bh.add_subreddits(sub)
+      \tbh.run()\n

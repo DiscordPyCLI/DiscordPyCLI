@@ -83,6 +83,14 @@ class BotBuilder:
         answers = inquirer.prompt(questions)
         use_banhammer = answers["use_banhammer"] == "Yes"
 
+        if use_banhammer:
+            if not self.basic:
+                self.imports.append("from banhammer import Banhammer")
+                self.imports.append("from banhammer.models import EventHandler, RedditItem")
+            else:
+                self.imports.append("from banhammer import Banhammer")
+                self.imports.append("from banhammer.models import RedditItem")
+
         self.create_var_file(
             client_id=client_id,
             token=token,
@@ -150,31 +158,46 @@ class BotBuilder:
         bot_path = os.path.join(self.root, f"{self.bot_file}.py")
 
         with open(bot_path, "w+") as f:
-            cogs_list = ", ".join(f'"cogs.{cog_file}"' for cog_file, _ in self.cogs)
+            type_sfx = "" if not self.basic else "-basic"
 
             skeleton = BOT_STRUCTURE["root"]["{bot_file}.py"]["skeleton"]
 
             config = BOT_STRUCTURE["root"]["{bot_file}.py"][f"config-{self.var_mode}"]
             config = config.format(bot_name=self.bot_name, cmd_prefix=cmd_prefix, description=description)
 
-            bot_structure_type = "bot" if not self.basic else "bot-basic"
-            bot = BOT_STRUCTURE["root"]["{bot_file}.py"][bot_structure_type]
-            bot = bot.format(bot_name=self.bot_name, help_cmd="")
+            bot = BOT_STRUCTURE["root"]["{bot_file}.py"]["bot" + type_sfx]
+
+            bases = "commands.Bot" if not use_banhammer else "commands.Bot, banhammer.Banhammer"
+
+            banhammer_setup = BOT_STRUCTURE["root"]["banhammer"]["setup" + type_sfx]
+            banhammer_events = BOT_STRUCTURE["root"]["banhammer"]["events" + type_sfx]
+            banhammer_ready = BOT_STRUCTURE["root"]["banhammer"]["ready" + type_sfx]
+
+            def fix_bh_string(string):
+                return string.rstrip("\n").replace("\\t", "    ").replace("\\n", "\n")
+
+            bot = bot.format(
+                bot_name=self.bot_name,
+                help_cmd="",
+                bases=bases,
+                banhammer_setup=fix_bh_string(banhammer_setup),
+                banhammer_events=fix_bh_string(banhammer_events),
+                banhammer_ready=fix_bh_string(banhammer_ready))
 
             cogs = "cogs = list()"
             if self.cogs:
                 if self.var_mode == "discord.yaml":
                     cogs = 'cogs = config["cogs"]'
                 else:
+                    cogs_list = ", ".join(f'"cogs.{cog_file}"' for cog_file, _ in self.cogs)
                     cogs = f"cogs = [{cogs_list}]"
 
-            main_structure_type = "main" if not self.basic else "main-basic"
-            main = BOT_STRUCTURE["root"]["{bot_file}.py"][main_structure_type]
+            main = BOT_STRUCTURE["root"]["{bot_file}.py"]["main" + type_sfx]
             main = main.format(bot_name=self.bot_name)
 
             f.write(skeleton.format(imports="\n".join(self.imports),
                                     config=config,
-                                    bot=bot,
                                     banhammer="",
+                                    bot=bot,
                                     cogs=cogs,
                                     main=main))
