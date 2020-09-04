@@ -26,7 +26,8 @@ class BotBuilder:
             print("[INFO:] Creating cogs...")
             for cog in with_cogs:
                 self.create_cog(cog)
-            self.add_cog_init()
+            if self.cogs:
+                self.add_cog_init()
 
         if not help_cmd:
             print("No help command generated.")
