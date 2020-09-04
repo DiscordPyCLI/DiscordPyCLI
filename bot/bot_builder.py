@@ -2,16 +2,19 @@ import os
 from pathlib import Path
 
 import inquirer
-import yaml
+from ruamel.yaml import YAML
 
 from .utils import get_cases
 
+yaml = YAML(typ="safe")
+yaml.indent(mapping=2, sequence=4, offset=2)
+
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), "bot_structure.yaml"))
-
 with open(path) as f:
-    BOT_STRUCTURE = yaml.load(f, Loader=yaml.FullLoader)
+    BOT_STRUCTURE = yaml.load(f)
 
-VAR_MODES = {"INI File (discord.ini)": "discord.ini",
+VAR_MODES = {"[RECOMMENDED:] YAML File (discord.yaml)": "discord.yaml",
+             "INI File (discord.ini)": "discord.ini",
              "Environment Variables (.env)": ".env",
              "Python File (config.py)": "config.py"}
 
@@ -22,12 +25,18 @@ class BotBuilder:
         self.bot_file, self.bot_name = get_cases(bot)
         self.cogs = list()
 
+        self.imports = ["import traceback",
+                        "from datetime import datetime",
+                        "from discord.ext import commands"]
+
+        self.requirements = ["discord.py>=1.4.1"]
+
     def create(self, with_cogs=None, help_cmd=None):
         print("[INFO:] Creating bot in folder:", self.bot_name)
 
         questions = [
             inquirer.List("var_mode",
-                          message="How would you like to store your client ID and secret?",
+                          message="How would you like to store your bot configuration?",
                           choices=VAR_MODES.keys(),
                           ),
         ]
@@ -57,13 +66,22 @@ class BotBuilder:
         else:
             print("[INFO:] Generating help command boilerplate.")
 
+        questions = [
+            inquirer.List("use_banhammer",
+                          message="Would you like to use the Banhammer.py framework in your bot to moderate subreddits?",
+                          choices=["Yes", "No"],
+                          ),
+        ]
+        answers = inquirer.prompt(questions)
+        use_banhammer = answers["use_banhammer"] == "Yes"
+
         self.create_var_file(
             var_mode,
             client_id=client_id,
             token=token,
             cmd_prefix=cmd_prefix,
             description=description)
-        self.create_bot_file()
+        self.create_bot_file(use_banhammer)
 
     @property
     def root(self):
@@ -95,14 +113,26 @@ class BotBuilder:
             f.write("\n")
 
     def create_var_file(self, var_mode, **kwargs):
+        if var_mode == "discord.ini":
+            self.imports.append("import configparser")
+
         Path(self.root).mkdir(parents=True, exist_ok=True)
 
         var_file_path = os.path.join(self.root, var_mode)
 
+        if var_mode == "discord.yaml":
+            config = {
+                "bot": kwargs,
+                "cogs": [cog_file for cog_file, _ in self.cogs]
+            }
+            with open(var_file_path, "w+") as f:
+                yaml.dump(config, f)
+            return
+
         with open(var_file_path, "w+") as f:
             f.write(BOT_STRUCTURE["root"][var_mode].format(bot_name=self.bot_name, **kwargs))
 
-    def create_bot_file(self):
+    def create_bot_file(self, use_banhammer):
         Path(self.root).mkdir(parents=True, exist_ok=True)
 
         bot_path = os.path.join(self.root, f"{self.bot_file}.py")
@@ -111,6 +141,7 @@ class BotBuilder:
             cogs_list = ", ".join(f'"cogs.{cog_file}"' for cog_file, _ in self.cogs)
             f.write(
                 BOT_STRUCTURE["root"]["{bot_file}.py"].format(
+                    imports="\n".join(self.imports),
                     bot_name=self.bot_name,
                     cmd_prefix="!",
                     cogs_list=cogs_list,

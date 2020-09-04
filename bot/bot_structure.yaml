@@ -24,11 +24,7 @@ root:
     __init__.py: ""
     help_cmd.py: |
   "{bot_file}.py": |
-    import configparser
-    import traceback
-    from datetime import datetime
-
-    from discord.ext import commands
+    {imports}
 
     class {bot_name}(commands.Bot):
         def __init__(self, **options):
