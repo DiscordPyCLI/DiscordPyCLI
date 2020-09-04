@@ -37,25 +37,26 @@ class BotBuilder:
         self.cogs = list()
 
         self.imports = ["import traceback",
-                        "from datetime import datetime",
                         "import discord",
-                        "from discord.ext import commands"]
+                        "from discord.ext import commands",
+                        
+                        "from datetime import datetime"]
 
         self.requirements = ["discord.py>=1.4.1"]
 
     def create(self, with_cogs=None):
         print("[INFO:] Creating bot in folder:", self.bot_name)
 
-        questions = [
+        question_config = [
             inquirer.List("var_mode",
                           message="How would you like to store your bot configuration?",
                           choices=VAR_MODES.keys(),
                           ),
         ]
-        answers = inquirer.prompt(questions)
+        answers = inquirer.prompt(question_config)
         self.var_mode = VAR_MODES[answers["var_mode"]]
 
-        i = input("What command prefix would you like to use for your bot? (default '!') ")
+        i = input("Choose a command prefix for your bot? (default is: ! ) ")
         cmd_prefix = i or "!"
 
         description = input("Please enter a short bot description: ")
@@ -86,13 +87,13 @@ class BotBuilder:
         else:
             self.create_help_cmd(help_cmd)
 
-        questions = [
+        question_bh = [
             inquirer.List("use_banhammer",
                           message="Would you like to use the Banhammer.py framework in your bot to moderate subreddits?",
                           choices=["Yes", "No"],
                           ),
         ]
-        answers = inquirer.prompt(questions)
+        answers = inquirer.prompt(question_bh)
         use_banhammer = answers["use_banhammer"] == "Yes"
 
         if use_banhammer:
@@ -205,6 +206,8 @@ class BotBuilder:
             self.imports.append("import configparser")
         elif self.var_mode == "config.py":
             self.imports.append("from config import config")
+        elif self.var_mode == ".env":
+            self.imports.append("from dotenv import load_dotenv")
 
         if self.var_mode == "discord.yaml":
             self.imports.append("from ruamel.yaml import YAML")
