@@ -9,10 +9,10 @@ setup(
         "console_scripts": [
             "bot=bot.bot:main"
         ]
-    }
+    },
     url="https://github.com/Dan6erbond/DiscordBotBuilder",
     install_requires=[
-        'PyYAML==5.3.1,
+        'PyYAML==5.3.1',
         'inquirer==2.7.0'
     ],
     keywords="discord bot cli",
