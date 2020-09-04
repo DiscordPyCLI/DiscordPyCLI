@@ -156,10 +156,9 @@ root:
       description = {description}
     config-config.py: |
       token = config["token"]
-
       cmd_prefix = config["cmd_prefix"]
       description = config["description"]
-    config-dotenv:
+    config-.env:
       load_dotenv()
       cmd_prefix = os.getenv("PREFIX")
       token = os.getenv("TOKEN")
@@ -179,3 +178,33 @@ root:
       TOKEN={token}
       CLIENT_ID={client_id}
       PREFIX={cmd_prefix}
+  banhammer:
+    setup: |+
+      reddit = apraw.Reddit(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
+                            password=PASSWORD, username=USERNAME, user_agent=USER_AGENT)
+      \t\tBanhammer.__init__(self, reddit, bot=self)\n
+    setup-basic: |
+      \n
+      reddit = apraw.Reddit(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
+                            password=PASSWORD, username=USERNAME, user_agent=USER_AGENT)
+      bh = banhammer.Banhammer(reddit, bot=bot)
+      \n
+    events: |
+      \n
+      \t@EventHandler.new()
+      \t@EventHandler.comments()
+      \tasync def handle_new(self, p: RedditItem):
+          \tmsg = await self.get_channel(CHANNEL_ID).send(embed=await p.get_embed(embed_template=self.embed))
+          \tawait p.add_reactions(msg)
+    events-basic: |
+      \n
+      @bh.new()
+      async def handle_new(p: RedditItem):
+          msg = await bot.get_channel(CHANNEL_ID).send(embed=await p.get_embed())
+          await p.add_reactions(msg)
+    ready: |
+      await self.add_subreddits(SUBNAME)
+      \t\tBanhammer.start(self)\n
+    ready-basic: |
+      \tawait bh.add_subreddits(sub)
+      \tbh.run()\n

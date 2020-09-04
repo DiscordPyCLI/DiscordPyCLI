@@ -39,7 +39,6 @@ class BotBuilder:
         self.imports = ["import traceback",
                         "import discord",
                         "from discord.ext import commands",
-                        
                         "from datetime import datetime"]
 
         self.requirements = ["discord.py>=1.4.1"]
