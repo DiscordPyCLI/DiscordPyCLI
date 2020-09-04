@@ -1,4 +1,5 @@
 root:
+  .gitignore: https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore
   cogs:
     __init__.py: ""
     "{cog_file}.py": |

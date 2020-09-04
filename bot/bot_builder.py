@@ -109,6 +109,8 @@ class BotBuilder:
             cmd_prefix=cmd_prefix,
             description=description)
 
+        self.create_gitignore()
+
         self.create_bot_file(use_banhammer, cmd_prefix, description)
 
     @property
@@ -140,13 +142,35 @@ class BotBuilder:
                     for data in response.iter_content(chunk_size=4096):
                         dl += len(data)
                         f.write(data)
-                        width = 20
-                        done = int(width * dl / total_length)
-                        print(f"\r[{'=' * done}{' ' * (width - done)}]", end="\r")
+                        done = int(25 * dl / total_length)
+                        print(f"\r[{'=' * done}{' ' * (25-done)}]", end="\r")
                     print("")
         else:
             with open(help_cmd_file_path, "w+") as f:
                 f.write(BOT_STRUCTURE["root"]["cmds"]["help_cmd.py"]["boilerplate"])
+
+    def create_gitignore(self):
+        Path(self.root).mkdir(parents=True, exist_ok=True)
+        gitignore_file_path = os.path.join(self.root, ".gitignore")
+
+        with open(gitignore_file_path, "wb+") as f:
+            url = BOT_STRUCTURE["root"][".gitignore"]
+            print("Downloading Python .gitignore template...")
+            response = requests.get(url)
+            total_length = response.headers.get('content-length')
+            if total_length is None:
+                f.write(response.content)
+            else:
+                dl = 0
+                total_length = int(total_length)
+                for data in response.iter_content(chunk_size=4096):
+                    dl += len(data)
+                    f.write(data)
+                    done = int(25 * dl / total_length)
+                    print(f"\r[{'=' * done}{' ' * (25-done)}]", end="\r")
+                print("")
+        with open(gitignore_file_path, "a+") as f:
+            f.write(f"\n# Bot config files\n{self.var_mode}\n")
 
     def create_cog(self, cog):
         cog_file, cog_name = get_cases(cog)
