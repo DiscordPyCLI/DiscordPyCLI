@@ -1,6 +1,6 @@
 root:
   cogs:
-    "__init__.py": ""
+    __init__.py: ""
     "{cog_file}.py": |
       from typing import TYPE_CHECKING
 
@@ -21,8 +21,8 @@ root:
       def setup(bot: '{bot_name}'):
           bot.add_cog({cog_name}(bot))
   cmds:
-    "__init__.py": ""
-    "help_cmd.py": |
+    __init__.py: ""
+    help_cmd.py: |
   "{bot_file}.py": |
     import configparser
     import traceback
@@ -67,17 +67,17 @@ root:
             print(f"Cog: {{cog}} loaded.")
 
         bot.run(config["{bot_name}"]["token"])
-  "discord.ini": |
+  discord.ini: |
     [{bot_name}]
     token={token}
     client_id={client_id}
-  "config.py": |
+  config.py: |
     config = {
       "command_prefix": "{cmd_prefix}",
       "description": "{description}",
       "client_id": "{client_id}",
       "token": "{token}"
     }
-  ".env": |
+  .env: |
     TOKEN={token}
     CLIENT_ID={client_id}
