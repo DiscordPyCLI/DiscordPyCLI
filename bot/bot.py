@@ -21,4 +21,4 @@ def main():
         if not args.args:
             print("[ERROR:] The bot's name must be specified.")
             return
-        BotBuilder().create(args.args[0], args.cog, args.help_cmd)
+        BotBuilder(args.args[0]).create(args.cog, args.help_cmd)
