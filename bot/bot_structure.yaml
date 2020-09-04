@@ -23,6 +23,7 @@ root:
   cmds:
     __init__.py: ""
     help_cmd.py:
+      template: https://raw.githubusercontent.com/GTAOnline-Mods/LesterCrestBot/master/cmds/help_command.py
       boilerplate: |
         import asyncio
         from inspect import Parameter

@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 import inquirer
+import requests
 from ruamel.yaml import YAML
 
 from .utils import get_cases
@@ -17,6 +18,10 @@ VAR_MODES = {"[RECOMMENDED:] YAML File (discord.yaml)": "discord.yaml",
              "INI File (discord.ini)": "discord.ini",
              "Environment Variables (.env)": ".env",
              "Python File (config.py)": "config.py"}
+
+HELP_CMDS = {"[RECOMMENDED:] Template Help Command": "template",
+             "Boilerplate": "boilerplate",
+             "No": None}
 
 
 class BotBuilder:
@@ -38,7 +43,7 @@ class BotBuilder:
 
         self.requirements = ["discord.py>=1.4.1"]
 
-    def create(self, with_cogs=None, help_cmd=None):
+    def create(self, with_cogs=None):
         print("[INFO:] Creating bot in folder:", self.bot_name)
 
         questions = [
@@ -67,12 +72,19 @@ class BotBuilder:
             if self.cogs:
                 self.add_cog_init()
 
+        questions = [
+            inquirer.List("help_cmd",
+                          message="Would you like to generate a help command?",
+                          choices=HELP_CMDS.keys(),
+                          ),
+        ]
+        answers = inquirer.prompt(questions)
+        help_cmd = HELP_CMDS[answers["help_cmd"]]
+
         if not help_cmd:
-            print("No help command generated.")
-        elif help_cmd == "template":
-            print("[INFO:] Generating Dan6erbond template help command.")
+            print("[INFO:] No help command generated.")
         else:
-            print("[INFO:] Generating help command boilerplate.")
+            self.create_help_cmd(help_cmd)
 
         questions = [
             inquirer.List("use_banhammer",
@@ -103,6 +115,39 @@ class BotBuilder:
     def root(self):
         return os.path.abspath(os.path.join(os.getcwd(), self.bot))
 
+    def create_help_cmd(self, help_cmd):
+        cmds_folder_path = os.path.join(self.root, "cmds")
+        Path(cmds_folder_path).mkdir(parents=True, exist_ok=True)
+
+        init_path = os.path.join(cmds_folder_path, "__init__.py")
+
+        with open(init_path, "a+") as f:
+            f.write("from .help_cmd import HelpCommand\n")
+
+        help_cmd_file_path = os.path.join(cmds_folder_path, "help_cmd.py")
+
+        if help_cmd == "template":
+            with open(help_cmd_file_path, "wb+") as f:
+                url = BOT_STRUCTURE["root"]["cmds"]["help_cmd.py"]["template"]
+                print("Downloading help_cmd.py...")
+                response = requests.get(url)
+                total_length = response.headers.get('content-length')
+                if total_length is None:
+                    f.write(response.content)
+                else:
+                    dl = 0
+                    total_length = int(total_length)
+                    for data in response.iter_content(chunk_size=4096):
+                        dl += len(data)
+                        f.write(data)
+                        width = 20
+                        done = int(width * dl / total_length)
+                        print(f"\r[{'=' * done}{' ' * (width - done)}]", end="\r")
+                    print("")
+        else:
+            with open(help_cmd_file_path, "w+") as f:
+                f.write(BOT_STRUCTURE["root"]["cmds"]["help_cmd.py"]["boilerplate"])
+
     def create_cog(self, cog):
         cog_file, cog_name = get_cases(cog)
         self.cogs.append((cog_file, cog_name))
@@ -124,7 +169,7 @@ class BotBuilder:
 
         init_path = os.path.join(cog_folder_path, "__init__.py")
 
-        with open(init_path, "w+") as f:
+        with open(init_path, "a+") as f:
             f.write("\n".join(f"from .{cog_file} import {cog_name}" for cog_file, cog_name in self.cogs))
             f.write("\n")
 
