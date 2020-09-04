@@ -12,7 +12,7 @@ setup(
     },
     url="https://github.com/Dan6erbond/DiscordBotBuilder",
     install_requires=[
-        'PyYAML==5.3.1',
+        'ruamel.yaml==0.16.12',
         'inquirer==2.7.0'
     ],
     keywords="discord bot cli",

@@ -1,2 +1,2 @@
-PyYAML==5.3.1
-inquirer==2.7.0
+ruamel.yaml>=0.16.12
+inquirer>=2.7.0
