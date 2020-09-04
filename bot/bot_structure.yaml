@@ -67,3 +67,17 @@ root:
             print(f"Cog: {{cog}} loaded.")
 
         bot.run(config["{bot_name}"]["token"])
+  "discord.ini": |
+    [{bot_name}]
+    token={token}
+    client_id={client_id}
+  "config.py": |
+    config = {
+      "command_prefix": "{cmd_prefix}",
+      "description": "{description}",
+      "client_id": "{client_id}",
+      "token": "{token}"
+    }
+  ".env": |
+    TOKEN={token}
+    CLIENT_ID={client_id}

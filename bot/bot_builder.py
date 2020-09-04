@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import inquirer
 import yaml
 
 from .utils import get_cases
@@ -9,6 +10,10 @@ path = os.path.abspath(os.path.join(os.path.dirname(__file__), "bot_structure.ya
 
 with open(path) as f:
     BOT_STRUCTURE = yaml.load(f, Loader=yaml.FullLoader)
+
+VAR_MODES = {"INI File (discord.ini)": "discord.ini",
+             "Environment Variables (.env)": ".env",
+             "Python File (config.py)": "config.py"}
 
 
 class BotBuilder:
@@ -19,6 +24,22 @@ class BotBuilder:
 
     def create(self, with_cogs=None, help_cmd=None):
         print("[INFO:] Creating bot in folder:", self.bot_name)
+
+        questions = [
+            inquirer.List("var_mode",
+                          message="How would you like to store your client ID and secret?",
+                          choices=VAR_MODES.keys(),
+                          ),
+        ]
+        answers = inquirer.prompt(questions)
+        var_mode = VAR_MODES[answers["var_mode"]]
+
+        i = input("What command prefix would you like to use for your bot? (default '!') ")
+        cmd_prefix = i or "!"
+
+        description = input("Please enter a short bot description: ")
+        client_id = input("Please enter your bot's client ID: ")
+        token = input("Please enter your bot's token: ")
 
         if not with_cogs:
             print("[INFO:] No cogs created.")
@@ -36,6 +57,12 @@ class BotBuilder:
         else:
             print("[INFO:] Generating help command boilerplate.")
 
+        self.create_var_file(
+            var_mode,
+            client_id=client_id,
+            token=token,
+            cmd_prefix=cmd_prefix,
+            description=description)
         self.create_bot_file()
 
     @property
@@ -66,6 +93,14 @@ class BotBuilder:
         with open(init_path, "w+") as f:
             f.write("\n".join(f"from .{cog_file} import {cog_name}" for cog_file, cog_name in self.cogs))
             f.write("\n")
+
+    def create_var_file(self, var_mode, **kwargs):
+        Path(self.root).mkdir(parents=True, exist_ok=True)
+
+        var_file_path = os.path.join(self.root, var_mode)
+
+        with open(var_file_path, "w+") as f:
+            f.write(BOT_STRUCTURE["root"][var_mode].format(bot_name=self.bot_name, **kwargs))
 
     def create_bot_file(self):
         Path(self.root).mkdir(parents=True, exist_ok=True)
