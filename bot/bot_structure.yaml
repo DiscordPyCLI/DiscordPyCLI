@@ -22,58 +22,153 @@ root:
           bot.add_cog({cog_name}(bot))
   cmds:
     __init__.py: ""
-    help_cmd.py: |
-  "{bot_file}.py": |
-    {imports}
+    help_cmd.py:
+      boilerplate: |
+        import asyncio
+        from inspect import Parameter
+        from typing import List, Mapping, Optional
 
-    class {bot_name}(commands.Bot):
-        def __init__(self, **options):
-            super().__init__("{cmd_prefix}", description="{description}", **options)
+        import discord
+        from discord.ext import commands
 
-        async def on_ready(self):
-            print(f"{{self.user.name}} is running.")
 
-        async def on_command_error(self, ctx: commands.Context, error: Exception):
-            if isinstance(error, discord.ext.commands.errors.CommandNotFound):
-                pass
-            else:
-                await ctx.message.channel.send(error)
-                traceback.print_tb(error.__traceback__)
+        class HelpCommand(commands.HelpCommand):
 
-        @property
-        def embed(self):
-            embed = discord.Embed(
-                colour=discord.Colour(0).from_rgb(0, 0, 0)
-            )
-            embed.set_footer(text=f"{bot_name}", icon_url=self.user.avatar_url)
-            embed.timestamp = datetime.utcnow()
+            def __init__(self, embed_color: discord.Colour = discord.Colour(0).from_rgb(64, 153, 130), **options):
+                self._embed_color = embed_color
+                super().__init__(**options)
 
-            return embed
+            async def send_bot_help(self, mapping: Mapping[Optional[commands.Cog], List[commands.Command]]):
+                print("Bot help:", mapping)
+                return await super().send_bot_help(mapping)
 
-    cogs = [{cogs_list}]
+            async def send_cog_help(self, cog: commands.Cog):
+                print("Cog help:", cog)
+                return await super().send_cog_help(cog)
 
-    if __name__ == "__main__":
-        bot = {bot_name}()
+            async def send_group_help(self, group):
+                print("Group help:", group)
+                return await super().send_group_help(group)
 
-        config = configparser.ConfigParser()
-        config.read("discord.ini")
+            async def send_command_help(self, command: commands.Command):
+                print("Command help:", command)
+                return await super().send_command_help(command)
 
-        for cog in cogs:
-            bot.load_extension(cog)
-            print(f"Cog: {{cog}} loaded.")
+            async def command_not_found(self, string):
+                print("Command not found:", string)
+                return super().command_not_found(string)
 
-        bot.run(config["{bot_name}"]["token"])
-  discord.ini: |
-    [{bot_name}]
-    token={token}
-    client_id={client_id}
-  config.py: |
-    config = {
-      "command_prefix": "{cmd_prefix}",
-      "description": "{description}",
-      "client_id": "{client_id}",
-      "token": "{token}"
-    }
-  .env: |
-    TOKEN={token}
-    CLIENT_ID={client_id}
+            async def subcommand_not_found(self, command, string):
+                print("Subcommand not found:", command, string)
+                return super().subcommand_not_found(command, string)
+
+            async def on_help_command_error(self, ctx, error):
+                print("Help command error:", ctx, error)
+                return await super().on_help_command_error(ctx, error)
+
+            async def send_error_message(self, error):
+                if error:
+                    print(error)
+  "{bot_file}.py":
+    skeleton: |
+      {imports}
+
+      {config}
+
+      {bot}{banhammer}
+
+      {cogs}
+
+      {main}
+    bot: |
+      class {bot_name}(commands.Bot):
+          def __init__(self, **options):
+              super().__init__(cmd_prefix, description=description{help_cmd}, **options)
+
+          async def on_ready(self):
+              print(f"{{self.user.name}} is running.")
+
+          async def on_command_error(self, ctx: commands.Context, error: Exception):
+              if isinstance(error, discord.ext.commands.errors.CommandNotFound):
+                  pass
+              else:
+                  await ctx.message.channel.send(error)
+                  traceback.print_tb(error.__traceback__)
+
+          @property
+          def embed(self):
+              embed = discord.Embed(
+                  colour=discord.Colour(0).from_rgb(0, 0, 0)
+              )
+              embed.set_footer(text=f"{bot_name}", icon_url=self.user.avatar_url)
+              embed.timestamp = datetime.utcnow()
+
+              return embed
+    bot-basic: |
+      bot = commands.Bot(cmd_prefix, description=description{help_cmd})
+
+      @bot.event
+      async def on_ready():
+          print(f"{{bot.user.name}} is running.")
+
+      @bot.event
+      async def on_command_error(self, ctx: commands.Context, error: Exception):
+          if isinstance(error, discord.ext.commands.errors.CommandNotFound):
+              pass
+          else:
+              await ctx.message.channel.send(error)
+              traceback.print_tb(error.__traceback__)
+    main: |
+      if __name__ == "__main__":
+          bot = {bot_name}()
+
+          for cog in cogs:
+              bot.load_extension(cog)
+              print(f"Cog: {{cog}} loaded.")
+
+          bot.run(token)
+    main-basic: |
+      if __name__ == "__main__":
+          for cog in cogs:
+              bot.load_extension(cog)
+              print(f"Cog: {{cog}} loaded.")
+
+          bot.run(token)
+    config-discord.yaml: |
+      yaml = YAML(typ="safe")
+      yaml.indent(mapping=2, sequence=4, offset=2)
+
+      with open("discord.yaml") as f:
+          config = yaml.load(f)
+
+      token = config["{bot_name}"]["token"]
+
+      cmd_prefix = config["{bot_name}"]["cmd_prefix"]
+      description = config["{bot_name}"]["description"]
+    config-discord.ini: |
+      config = configparser.ConfigParser()
+      config.read("discord.ini")
+      token = config["{bot_name}"]["token"]
+
+      cmd_prefix = {cmd_prefix}
+      description = {description}
+    config-config.py: |
+      token = config["token"]
+
+      cmd_prefix = config["cmd_prefix"]
+      description = config["description"]
+  config:
+    discord.ini: |
+      [{bot_name}]
+      token={token}
+      client_id={client_id}
+    config.py: |
+      config = {
+        "cmd_prefix": "{cmd_prefix}",
+        "description": "{description}",
+        "client_id": "{client_id}",
+        "token": "{token}"
+      }
+    .env: |
+      TOKEN={token}
+      CLIENT_ID={client_id}

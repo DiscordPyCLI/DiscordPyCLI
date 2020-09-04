@@ -20,13 +20,20 @@ VAR_MODES = {"[RECOMMENDED:] YAML File (discord.yaml)": "discord.yaml",
 
 
 class BotBuilder:
-    def __init__(self, bot):
+    def __init__(self, bot, basic):
         self.bot = bot
+        self.basic = basic
+
         self.bot_file, self.bot_name = get_cases(bot)
+
+        if basic:
+            self.bot_name = "bot"
+
         self.cogs = list()
 
         self.imports = ["import traceback",
                         "from datetime import datetime",
+                        "import discord",
                         "from discord.ext import commands"]
 
         self.requirements = ["discord.py>=1.4.1"]
@@ -41,12 +48,13 @@ class BotBuilder:
                           ),
         ]
         answers = inquirer.prompt(questions)
-        var_mode = VAR_MODES[answers["var_mode"]]
+        self.var_mode = VAR_MODES[answers["var_mode"]]
 
         i = input("What command prefix would you like to use for your bot? (default '!') ")
         cmd_prefix = i or "!"
 
         description = input("Please enter a short bot description: ")
+
         client_id = input("Please enter your bot's client ID: ")
         token = input("Please enter your bot's token: ")
 
@@ -76,12 +84,12 @@ class BotBuilder:
         use_banhammer = answers["use_banhammer"] == "Yes"
 
         self.create_var_file(
-            var_mode,
             client_id=client_id,
             token=token,
             cmd_prefix=cmd_prefix,
             description=description)
-        self.create_bot_file(use_banhammer)
+
+        self.create_bot_file(use_banhammer, cmd_prefix, description)
 
     @property
     def root(self):
@@ -112,37 +120,61 @@ class BotBuilder:
             f.write("\n".join(f"from .{cog_file} import {cog_name}" for cog_file, cog_name in self.cogs))
             f.write("\n")
 
-    def create_var_file(self, var_mode, **kwargs):
-        if var_mode == "discord.ini":
-            self.imports.append("import configparser")
-
+    def create_var_file(self, **kwargs):
         Path(self.root).mkdir(parents=True, exist_ok=True)
+        var_file_path = os.path.join(self.root, self.var_mode)
 
-        var_file_path = os.path.join(self.root, var_mode)
+        if self.var_mode == "discord.ini":
+            self.imports.append("import configparser")
+        elif self.var_mode == "config.py":
+            self.imports.append("from config import config")
 
-        if var_mode == "discord.yaml":
+        if self.var_mode == "discord.yaml":
+            self.imports.append("from ruamel.yaml import YAML")
+
             config = {
-                "bot": kwargs,
+                self.bot_name: kwargs,
                 "cogs": [cog_file for cog_file, _ in self.cogs]
             }
+
             with open(var_file_path, "w+") as f:
                 yaml.dump(config, f)
             return
 
         with open(var_file_path, "w+") as f:
-            f.write(BOT_STRUCTURE["root"][var_mode].format(bot_name=self.bot_name, **kwargs))
+            f.write(BOT_STRUCTURE["root"]["config"][self.var_mode].format(bot_name=self.bot_name, **kwargs))
 
-    def create_bot_file(self, use_banhammer):
+    def create_bot_file(self, use_banhammer, cmd_prefix, description):
         Path(self.root).mkdir(parents=True, exist_ok=True)
 
         bot_path = os.path.join(self.root, f"{self.bot_file}.py")
 
         with open(bot_path, "w+") as f:
             cogs_list = ", ".join(f'"cogs.{cog_file}"' for cog_file, _ in self.cogs)
-            f.write(
-                BOT_STRUCTURE["root"]["{bot_file}.py"].format(
-                    imports="\n".join(self.imports),
-                    bot_name=self.bot_name,
-                    cmd_prefix="!",
-                    cogs_list=cogs_list,
-                    description="Some description."))
+
+            skeleton = BOT_STRUCTURE["root"]["{bot_file}.py"]["skeleton"]
+
+            config = BOT_STRUCTURE["root"]["{bot_file}.py"][f"config-{self.var_mode}"]
+            config = config.format(bot_name=self.bot_name, cmd_prefix=cmd_prefix, description=description)
+
+            bot_structure_type = "bot" if not self.basic else "bot-basic"
+            bot = BOT_STRUCTURE["root"]["{bot_file}.py"][bot_structure_type]
+            bot = bot.format(bot_name=self.bot_name, help_cmd="")
+
+            cogs = "cogs = list()"
+            if self.cogs:
+                if self.var_mode == "discord.yaml":
+                    cogs = 'cogs = config["cogs"]'
+                else:
+                    cogs = f"cogs = [{cogs_list}]"
+
+            main_structure_type = "main" if not self.basic else "main-basic"
+            main = BOT_STRUCTURE["root"]["{bot_file}.py"][main_structure_type]
+            main = main.format(bot_name=self.bot_name)
+
+            f.write(skeleton.format(imports="\n".join(self.imports),
+                                    config=config,
+                                    bot=bot,
+                                    banhammer="",
+                                    cogs=cogs,
+                                    main=main))
