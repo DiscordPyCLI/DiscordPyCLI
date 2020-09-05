@@ -15,7 +15,7 @@ root:
           def __init__(self, bot: '{bot_name}'):
               self.bot = bot
 
-          commands.command()
+          @commands.command()
           async def command(self, ctx: commands.Context):
               pass
 

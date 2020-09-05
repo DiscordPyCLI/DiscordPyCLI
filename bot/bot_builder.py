@@ -3,16 +3,10 @@ from pathlib import Path
 
 import inquirer
 import requests
-from ruamel.yaml import YAML
 
+from .cog_builder import CogBuilder
+from .const import BOT_STRUCTURE, yaml
 from .utils import get_cases
-
-yaml = YAML(typ="safe")
-yaml.indent(mapping=2, sequence=4, offset=2)
-
-path = os.path.abspath(os.path.join(os.path.dirname(__file__), "bot_structure.yaml"))
-with open(path) as f:
-    BOT_STRUCTURE = yaml.load(f)
 
 VAR_MODES = {"[RECOMMENDED:] YAML File (discord.yaml)": "discord.yaml",
              "INI File (discord.ini)": "discord.ini",
@@ -67,10 +61,9 @@ class BotBuilder:
             print("[INFO:] No cogs created.")
         else:
             print("[INFO:] Creating cogs...")
+            cog_builder = CogBuilder(self.root, self.bot_file, self.bot_name)
             for cog in with_cogs:
-                self.create_cog(cog)
-            if self.cogs:
-                self.add_cog_init()
+                self.cogs.append(cog_builder.add_cog(cog))
 
         questions = [
             inquirer.List("help_cmd",
@@ -179,31 +172,6 @@ class BotBuilder:
 
         with open(requirements_file_path, "a+") as f:
             f.write("\n".join(self.requirements) + "\n")
-
-    def create_cog(self, cog):
-        cog_file, cog_name = get_cases(cog)
-        self.cogs.append((cog_file, cog_name))
-
-        cog_folder_path = os.path.join(self.root, "cogs")
-        Path(cog_folder_path).mkdir(parents=True, exist_ok=True)
-
-        cog_file_path = os.path.join(cog_folder_path, f"{cog_file}.py")
-
-        with open(cog_file_path, "w+") as f:
-            f.write(BOT_STRUCTURE["root"]["cogs"]["{cog_file}.py"].format(
-                bot_file=self.bot_file,
-                bot_name=self.bot_name,
-                cog_name=cog_name))
-
-    def add_cog_init(self):
-        cog_folder_path = os.path.join(self.root, "cogs")
-        Path(cog_folder_path).mkdir(parents=True, exist_ok=True)
-
-        init_path = os.path.join(cog_folder_path, "__init__.py")
-
-        with open(init_path, "a+") as f:
-            f.write("\n".join(f"from .{cog_file} import {cog_name}" for cog_file, cog_name in self.cogs))
-            f.write("\n")
 
     def create_var_file(self, **kwargs):
         Path(self.root).mkdir(parents=True, exist_ok=True)
