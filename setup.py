@@ -1,16 +1,16 @@
 from setuptools import setup
 
 setup(
-    name="discord-bot-builder",
+    name="DPyCLI",
     version="0.0.1",
     author="Dan6erbond",
     author_email="moravrav@gmail.com",
     entry_points={
         "console_scripts": [
-            "bot=bot.bot:main"
+            "dpy=DPyCLI.bot:main"
         ]
     },
-    url="https://github.com/Dan6erbond/DiscordBotBuilder",
+    url="https://github.com/Dan6erbond/DPyCLI",
     install_requires=[
         'inquirer==2.7.0',
         'requests>=2.24.0',
