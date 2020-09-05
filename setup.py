@@ -3,14 +3,14 @@ from setuptools import setup
 setup(
     name="DPyCLI",
     version="0.0.1",
-    author="Dan6erbond",
-    author_email="moravrav@gmail.com",
+    author="Dan6erbond / Amelia-exe",
+    author_email="DiscordPyCLI@gmail.com",
     entry_points={
         "console_scripts": [
             "dpy=dpycli.bot:main"
         ]
     },
-    url="https://github.com/Dan6erbond/DPyCLI",
+    url="https://github.com/DPyCLI/DPyCLI",
     install_requires=[
         'inquirer==2.7.0',
         'requests>=2.24.0',
