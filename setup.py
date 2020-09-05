@@ -7,7 +7,7 @@ setup(
     author_email="DiscordPyCLI@gmail.com",
     entry_points={
         "console_scripts": [
-            "dpy=dpycli.bot:main"
+            "dpy=dpycli.dpy_cli:main"
         ]
     },
     url="https://github.com/DPyCLI/DPyCLI",
