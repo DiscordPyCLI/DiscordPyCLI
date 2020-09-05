@@ -8,7 +8,7 @@ with open("requirements.txt") as f:
     requirements = f.read().splitlines()
 
 setup(
-    name="DPyCLI",
+    name="DiscordPyCLI",
     version="{}-{}".format(__version__, __tag__) if __tag__ else __version__,
     author="Dan6erbond / Amelia-exe",
     author_email="DiscordPyCLI@gmail.com",

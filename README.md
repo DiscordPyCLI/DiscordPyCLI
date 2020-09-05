@@ -2,15 +2,15 @@
 
 A library built by [Amelia Cabotte](https://github.com/Amelia-exe) and [RaviAnand Mohabir](https://github.com/Dan6erbond).
 
-DPyCLI is a set of command line tools inspired by packages such as `npx` and `vue cli` to aid in creating Discord.py bots. The interface enables fast creation of Python projects that follow all the file structure conventions and are typed properly. Goodies such as configuration files, which can be either INI, YAML, Python or `.env` files are supported as well, and a custom `.gitignore` keeps your client information safe.
+DiscordPyCLI is a set of command line tools inspired by packages such as `npx` and `vue cli` to aid in creating Discord.py bots. The interface enables fast creation of Python projects that follow all the file structure conventions and are typed properly. Goodies such as configuration files, which can be either INI, YAML, Python or `.env` files are supported as well, and a custom `.gitignore` keeps your client information safe.
 
 ## Usage
 
-DPyCLI is launched with the `dpy` command with numerous options and flags.
+DiscordPyCLI is launched with the `dpy` command with numerous options and flags.
 
 ### Creating a Bot
 
-The `dpy create` command allows you to use numerous flags and options to create a Discord.py bot which 
+The `dpy create` command allows you to use numerous flags and options to create a Discord.py bot which
 
  - `name`: The project's name, can be snake, kebab or camel case.
  - `--cog`: Supply cogs that should be generated with the bot.
