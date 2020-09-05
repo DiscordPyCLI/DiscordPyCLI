@@ -42,7 +42,7 @@ class BotBuilder:
                         
                         "from datetime import datetime"]
 
-        self.requirements = ["discord.py>=1.4.1"]
+        self.requirements = ["discord.py>=1.4.1", "python-dotenv>=0.14.0"]
 
     def create(self, with_cogs=None):
         print("[INFO:] Creating bot in folder:", self.bot_name)
