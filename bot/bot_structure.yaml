@@ -136,32 +136,33 @@ root:
               print(f"Cog: {{cog}} loaded.")
 
           bot.run(token)
-    config-discord.yaml: |
-      yaml = YAML(typ="safe")
-      yaml.indent(mapping=2, sequence=4, offset=2)
+    config:
+      discord.yaml: |
+        yaml = YAML(typ="safe")
+        yaml.indent(mapping=2, sequence=4, offset=2)
 
-      with open("discord.yaml") as f:
-          config = yaml.load(f)
+        with open("discord.yaml") as f:
+            config = yaml.load(f)
 
-      token = config["{bot_name}"]["token"]
+        token = config["bot"]["token"]
 
-      cmd_prefix = config["{bot_name}"]["cmd_prefix"]
-      description = config["{bot_name}"]["description"]
-    config-discord.ini: |
-      config = configparser.ConfigParser()
-      config.read("discord.ini")
-      token = config["{bot_name}"]["token"]
+        cmd_prefix = config["bot"]["cmd_prefix"]
+        description = config["bot"]["description"]
+      discord.ini: |
+        config = configparser.ConfigParser()
+        config.read("discord.ini")
+        token = config["{bot_name}"]["token"]
 
-      cmd_prefix = {cmd_prefix}
-      description = {description}
-    config-config.py: |
-      token = config["token"]
-      cmd_prefix = config["cmd_prefix"]
-      description = config["description"]
-    config-.env:
-      load_dotenv()
-      cmd_prefix = os.getenv("PREFIX")
-      token = os.getenv("TOKEN")
+        cmd_prefix = {cmd_prefix}
+        description = {description}
+      config.py: |
+        token = config["token"]
+        cmd_prefix = config["cmd_prefix"]
+        description = config["description"]
+      .env: |
+        load_dotenv()
+        cmd_prefix = os.getenv("PREFIX")
+        token = os.getenv("TOKEN")
   config:
     discord.ini: |
       [{bot_name}]
