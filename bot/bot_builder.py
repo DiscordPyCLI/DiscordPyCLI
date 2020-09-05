@@ -31,6 +31,7 @@ class BotBuilder:
         self.cogs = list()
 
         self.imports = ["import traceback",
+                        "import os",
                         "import discord",
                         "from discord.ext import commands",
                         "from datetime import datetime"]
