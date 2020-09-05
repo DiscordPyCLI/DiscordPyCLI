@@ -1,6 +1,6 @@
 # Discord.py Command Line Tools
 
-A library built by Amelia Cabotte and RaviAnand Mohabir.
+A library built by [Amelia Cabotte](https://github.com/Amelia-exe) and [RaviAnand Mohabir](https://github.com/Dan6erbond).
 
 DiscordBotBuilder is a set of command line tools inspired by packages such as `npx` and `vue cli` to aid in creating Discord.py bots. The interface enables fast creation of Python projects that follow all the file structure conventions and are typed properly. Goodies such as configuration files, which can be either INI, YAML, Python or `.env` files are supported as well, and a custom `.gitignore` keeps your client information safe.
 
