@@ -2,6 +2,9 @@ import os
 
 from ruamel.yaml import YAML
 
+__version__ = "0.1.0"
+__tag__ = "beta"
+
 yaml = YAML(typ="safe")
 yaml.default_flow_style = False
 yaml.indent(mapping=2, sequence=4, offset=2)

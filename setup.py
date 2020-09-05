@@ -1,21 +1,27 @@
 from setuptools import setup
+from dpycli import __version__, __tag__
+
+with open("README.md", "r", encoding="utf8") as fh:
+    long_description = fh.read()
+
+with open("requirements.txt") as f:
+    requirements = f.read().splitlines()
 
 setup(
     name="DPyCLI",
-    version="0.0.1",
+    version="{}-{}".format(__version__, __tag__) if __tag__ else __version__,
     author="Dan6erbond / Amelia-exe",
     author_email="DiscordPyCLI@gmail.com",
+    description="A Discord.py CLI to generate boilerplate code, add dependencies and cogs.",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     entry_points={
         "console_scripts": [
             "dpy=dpycli.dpy_cli:main"
         ]
     },
     url="https://github.com/DPyCLI/DPyCLI",
-    install_requires=[
-        'inquirer==2.7.0',
-        'requests>=2.24.0',
-        'ruamel.yaml==0.16.12'
-    ],
+    install_requires=requirements,
     keywords="discord bot cli",
     classifiers=[
         "Development Status :: 3 - Alpha",
