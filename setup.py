@@ -20,7 +20,7 @@ setup(
             "dpy=dpycli.dpy_cli:main"
         ]
     },
-    url="https://github.com/DPyCLI/DPyCLI",
+    url="https://github.com/DiscordPyCLI/DiscordPyCLI",
     install_requires=requirements,
     keywords="discord bot cli",
     classifiers=[
