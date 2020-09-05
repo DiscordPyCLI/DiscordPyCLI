@@ -25,14 +25,22 @@ class CogBuilder:
                 bot_name=self.bot_name,
                 cog_name=cog_name))
 
+        yaml_path = os.path.join(self.bot_path, "discord.yaml")
+        with open(yaml_path) as f:
+            config = yaml.load(f)
+            config["cogs"] = [*config.get("cogs", []), f"cogs.{cog_file}"]
+            with open(yaml_path, "w") as _f:
+                yaml.dump(config, _f)
+
         init_path = os.path.join(cog_folder_path, "__init__.py")
 
         _import = f"from .{cog_file} import {cog_name}"
 
         import_exists = False
-        with open(init_path) as f:
-            if _import in f.read():
-                import_exists = True
+        if os.path.exists(init_path):
+            with open(init_path) as f:
+                if _import in f.read():
+                    import_exists = True
 
         if not import_exists:
             with open(init_path, "a+") as f:
