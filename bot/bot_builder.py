@@ -89,7 +89,7 @@ class BotBuilder:
         question_bh = [
             inquirer.List("use_banhammer",
                           message="Would you like to use the Banhammer.py framework in your bot to moderate subreddits?",
-                          choices=["Yes", "No"],
+                          choices=["No", "Yes"],
                           ),
         ]
         answers = inquirer.prompt(question_bh)
