@@ -7,7 +7,7 @@ setup(
     author_email="moravrav@gmail.com",
     entry_points={
         "console_scripts": [
-            "dpy=DPyCLI.bot:main"
+            "dpy=dpycli.bot:main"
         ]
     },
     url="https://github.com/Dan6erbond/DPyCLI",
