@@ -49,35 +49,13 @@ class BotBuilder:
         answers = inquirer.prompt(question_config)
         self.var_mode = VAR_MODES[answers["var_mode"]]
 
-        i = input("Choose a command prefix for your bot? (default is: ! ) ")
+        i = input("Choose a command prefix for your bot? (default is: '!') ")
         cmd_prefix = i or "!"
 
         description = input("Please enter a short bot description: ")
 
         client_id = input("Please enter your bot's client ID: ")
         token = input("Please enter your bot's token: ")
-
-        if not with_cogs:
-            print("[INFO:] No cogs created.")
-        else:
-            print("[INFO:] Creating cogs...")
-            cog_builder = CogBuilder(self.root, self.bot_file, self.bot_name)
-            for cog in with_cogs:
-                self.cogs.append(cog_builder.add_cog(cog))
-
-        questions = [
-            inquirer.List("help_cmd",
-                          message="Would you like to generate a help command?",
-                          choices=HELP_CMDS.keys(),
-                          ),
-        ]
-        answers = inquirer.prompt(questions)
-        help_cmd = HELP_CMDS[answers["help_cmd"]]
-
-        if not help_cmd:
-            print("[INFO:] No help command generated.")
-        else:
-            self.create_help_cmd(help_cmd)
 
         question_bh = [
             inquirer.List("use_banhammer",
@@ -102,6 +80,28 @@ class BotBuilder:
             token=token,
             cmd_prefix=cmd_prefix,
             description=description)
+
+        if not with_cogs:
+            print("[INFO:] No cogs created.")
+        else:
+            print("[INFO:] Creating cogs...")
+            cog_builder = CogBuilder(self.root, self.bot_file, self.bot_name)
+            for cog in with_cogs:
+                self.cogs.append(cog_builder.add_cog(cog))
+
+        questions = [
+            inquirer.List("help_cmd",
+                          message="Would you like to generate a help command?",
+                          choices=HELP_CMDS.keys(),
+                          ),
+        ]
+        answers = inquirer.prompt(questions)
+        help_cmd = HELP_CMDS[answers["help_cmd"]]
+
+        if not help_cmd:
+            print("[INFO:] No help command generated.")
+        else:
+            self.create_help_cmd(help_cmd)
 
         self.create_gitignore()
         self.create_requirements()
@@ -170,12 +170,20 @@ class BotBuilder:
         Path(self.root).mkdir(parents=True, exist_ok=True)
         requirements_file_path = os.path.join(self.root, "requirements.txt")
 
+        f_content = ""
+        with open(requirements_file_path) as f:
+            f_content = f.read()
+
         with open(requirements_file_path, "a+") as f:
-            f.write("\n".join(self.requirements) + "\n")
+            for req in self.requirements:
+                if req in f_content:
+                    continue
+                f.write(req + "\n")
 
     def create_var_file(self, **kwargs):
         Path(self.root).mkdir(parents=True, exist_ok=True)
         var_file_path = os.path.join(self.root, self.var_mode)
+        yaml_file_path = os.path.join(self.root, "discord.yaml")
 
         if self.var_mode == "discord.ini":
             self.imports.append("import configparser")
@@ -185,21 +193,31 @@ class BotBuilder:
             self.imports.append("from dotenv import load_dotenv")
             self.requirements.append("python-dotenv>=0.14.0")
 
+        config = {
+            "name": self.bot,
+            "bot": {
+                "main": "./" + self.bot_file + ".py",
+            },
+            "dependencies": self.requirements,
+        }
+
         if self.var_mode == "discord.yaml":
             self.imports.append("from ruamel.yaml import YAML")
             self.requirements.append("ruamel.yaml>=0.16.12")
 
-            config = {
-                self.bot_name: kwargs,
-                "cogs": [cog_file for cog_file, _ in self.cogs]
+            config["bot"] = {
+                **kwargs,
+                **config["bot"],
             }
 
             with open(var_file_path, "w+") as f:
                 yaml.dump(config, f)
-            return
+        else:
+            with open(yaml_file_path, "w+") as f:
+                yaml.dump(config, f)
 
-        with open(var_file_path, "w+") as f:
-            f.write(BOT_STRUCTURE["root"]["config"][self.var_mode].format(bot_name=self.bot_name, **kwargs))
+            with open(var_file_path, "w+") as f:
+                f.write(BOT_STRUCTURE["root"]["config"][self.var_mode].format(bot_name=self.bot_name, **kwargs))
 
     def create_bot_file(self, use_banhammer, cmd_prefix, description):
         Path(self.root).mkdir(parents=True, exist_ok=True)
@@ -211,7 +229,7 @@ class BotBuilder:
 
             skeleton = BOT_STRUCTURE["root"]["{bot_file}.py"]["skeleton"]
 
-            config = BOT_STRUCTURE["root"]["{bot_file}.py"][f"config-{self.var_mode}"]
+            config = BOT_STRUCTURE["root"]["{bot_file}.py"]["config"][self.var_mode]
             config = config.format(bot_name=self.bot_name, cmd_prefix=cmd_prefix, description=description)
 
             bot = BOT_STRUCTURE["root"]["{bot_file}.py"]["bot" + type_sfx]
