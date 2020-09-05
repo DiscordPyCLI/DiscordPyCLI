@@ -182,12 +182,12 @@ root:
   banhammer:
     setup: |+
       reddit = apraw.Reddit(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
-                            password=PASSWORD, username=USERNAME, user_agent=USER_AGENT)
+                            username=USERNAME, password=PASSWORD, user_agent=USER_AGENT)
       \t\tBanhammer.__init__(self, reddit, bot=self)\n
     setup-basic: |
       \n
       reddit = apraw.Reddit(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
-                            password=PASSWORD, username=USERNAME, user_agent=USER_AGENT)
+                            username=USERNAME, password=PASSWORD, user_agent=USER_AGENT)
       bh = banhammer.Banhammer(reddit, bot=bot)
       \n
     events: |
