@@ -1,5 +1,6 @@
 import re
 
+
 def get_cases(source):
     parts = source.split("-") if len(source.split("-")) > 1 else source.split("_")
 
