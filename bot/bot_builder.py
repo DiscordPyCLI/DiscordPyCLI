@@ -31,6 +31,7 @@ class BotBuilder:
         self.cogs = list()
 
         self.imports = ["import traceback",
+                        "import os",
                         "import discord",
                         "from discord.ext import commands",
                         "from datetime import datetime"]
@@ -169,10 +170,11 @@ class BotBuilder:
     def create_requirements(self):
         Path(self.root).mkdir(parents=True, exist_ok=True)
         requirements_file_path = os.path.join(self.root, "requirements.txt")
-
+                    
         f_content = ""
-        with open(requirements_file_path) as f:
-            f_content = f.read()
+        if os.path.exists(requirements_file_path):
+            with open(requirements_file_path) as f:
+                f_content = f.read()
 
         with open(requirements_file_path, "a+") as f:
             for req in self.requirements:
