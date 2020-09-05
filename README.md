@@ -6,13 +6,17 @@ DPyCLI is a set of command line tools inspired by packages such as `npx` and `vu
 
 ## Usage
 
-Currently the only working command is `bot create` which supports the following arguments/flags:
+DPyCLI is launched with the `dpy` command with numerous options and flags.
+
+### Creating a Bot
+
+The `dpy create` command allows you to use numerous flags and options to create a Discord.py bot which 
 
  - `name`: The project's name, can be snake, kebab or camel case.
  - `--cog`: Supply cogs that should be generated with the bot.
  - `--basic`: Flag to create a simple instance of a `commands.Bot`, instead of the full class implementation.
 
-Running `bot create my-bot --cog=TestCog` and leaving all the prompts at their default will create the following base folder structure:
+Running `dpy create my-bot --cog=TestCog` and leaving all the prompts at their default will create the following base folder structure:
 
 ```
 my-bot /
