@@ -5,9 +5,9 @@ def get_cases(source):
 
     if len(parts) > 1:
         snake_case = "_".join(p.lower() for p in parts)
-        camel_case = "".join(p.title() for p in parts)
+        camelCase = "".join(p.title() for p in parts)
     else:
         snake_case = re.sub(r'(?<!^)(?=[A-Z])', '_', source).lower()
-        camel_case = "".join(p.title() for p in snake_case.split("_"))
+        camelCase = "".join(p.title() for p in snake_case.split("_"))
 
-    return snake_case, camel_case
+    return snake_case, camelCase
