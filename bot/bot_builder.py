@@ -39,7 +39,6 @@ class BotBuilder:
         self.imports = ["import traceback",
                         "import discord",
                         "from discord.ext import commands",
-                        
                         "from datetime import datetime"]
 
         self.requirements = ["discord.py>=1.4.1"]
@@ -97,6 +96,7 @@ class BotBuilder:
         use_banhammer = answers["use_banhammer"] == "Yes"
 
         if use_banhammer:
+            self.requirements.append("Banhammer.py>=2.5.4b0")
             if not self.basic:
                 self.imports.append("from banhammer import Banhammer")
                 self.imports.append("from banhammer.models import EventHandler, RedditItem")
@@ -111,7 +111,7 @@ class BotBuilder:
             description=description)
 
         self.create_gitignore()
-
+        self.create_requirements()
         self.create_bot_file(use_banhammer, cmd_prefix, description)
 
     @property
@@ -173,6 +173,13 @@ class BotBuilder:
         with open(gitignore_file_path, "a+") as f:
             f.write(f"\n# Bot config files\n{self.var_mode}\n")
 
+    def create_requirements(self):
+        Path(self.root).mkdir(parents=True, exist_ok=True)
+        requirements_file_path = os.path.join(self.root, "requirements.txt")
+
+        with open(requirements_file_path, "a+") as f:
+            f.write("\n".join(self.requirements) + "\n")
+
     def create_cog(self, cog):
         cog_file, cog_name = get_cases(cog)
         self.cogs.append((cog_file, cog_name))
@@ -208,9 +215,11 @@ class BotBuilder:
             self.imports.append("from config import config")
         elif self.var_mode == ".env":
             self.imports.append("from dotenv import load_dotenv")
+            self.requirements.append("python-dotenv>=0.14.0")
 
         if self.var_mode == "discord.yaml":
             self.imports.append("from ruamel.yaml import YAML")
+            self.requirements.append("ruamel.yaml>=0.16.12")
 
             config = {
                 self.bot_name: kwargs,
