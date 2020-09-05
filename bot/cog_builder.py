@@ -28,7 +28,8 @@ class CogBuilder:
         yaml_path = os.path.join(self.bot_path, "discord.yaml")
         with open(yaml_path) as f:
             config = yaml.load(f)
-            config["cogs"] = [*config.get("cogs", []), f"cogs.{cog_file}"]
+            cogs = config.get("cogs", [])
+            config["cogs"] = cogs if f"cogs.{cog_file}" in cogs else [*cogs, f"cogs.{cog_file}"]
             with open(yaml_path, "w") as _f:
                 yaml.dump(config, _f)
 
