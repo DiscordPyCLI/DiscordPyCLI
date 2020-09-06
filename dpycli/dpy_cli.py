@@ -21,7 +21,7 @@ parser.add_argument(
     nargs="?",
     const=True,
     default=False)
-parser.add_argument("--cog", "-c", help="Cogs to include in the bot.", nargs="*", action="extend")
+parser.add_argument("--cog", "-c", help="Cogs to include in the bot.", nargs="*")
 
 
 class Bot:

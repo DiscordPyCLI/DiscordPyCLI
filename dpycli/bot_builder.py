@@ -37,6 +37,7 @@ class BotBuilder:
                         "from datetime import datetime"]
 
         self.requirements = ["discord.py>=1.4.1"]
+        self.var_mode: str = str()
 
     def create(self, with_cogs=None):
         print("[INFO:] Creating bot in folder:", self.bot_name)
@@ -60,7 +61,8 @@ class BotBuilder:
 
         question_bh = [
             inquirer.List("use_banhammer",
-                          message="Would you like to use the Banhammer.py framework in your bot to moderate subreddits?",
+                          message="Would you like to use the Banhammer.py framework in your bot to moderate "
+                                  "subreddits?",
                           choices=["No", "Yes"],
                           ),
         ]
