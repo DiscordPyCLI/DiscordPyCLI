@@ -1,9 +1,12 @@
 import argparse
 import os
 
+import click
+
 from .bot_builder import BotBuilder
 from .cog_builder import CogBuilder
 from .const import yaml
+from .discord_bot import DiscordBot
 from .utils import get_cases
 
 parser = argparse.ArgumentParser(description="Discord bot CLI scripts.")
@@ -23,18 +26,9 @@ parser.add_argument(
     default=False)
 parser.add_argument("--cog", "-c", help="Cogs to include in the bot.", nargs="*")
 
-
-class Bot:
-    def __init__(self, base_path=None):
-        self.base_path = base_path or os.getcwd()
-
-    def get_bot_config(self):
-        yaml_path = os.path.join(self.base_path, "discord.yaml")
-        with open(yaml_path) as f:
-            return yaml.load(f)
-
-
+@click.group()
 def main():
+    '''
     args = parser.parse_args()
 
     if args.mode == "create":
@@ -42,7 +36,7 @@ def main():
             print("[ERROR:] The bot's name or a create-mode must be specified.")
             return
         elif args.args[0] == "cog":
-            config = Bot().get_bot_config()
+            config = DiscordBot().get_bot_config()
             CogBuilder(
                 os.getcwd(),
                 os.path.basename(config["bot"]["main"]),
@@ -50,3 +44,20 @@ def main():
             ).add_cog(args.args[1])
         else:
             BotBuilder(args.args[0], args.basic).create(args.cog)
+            '''
+
+@main.group()
+@click.argument("name", nargs=1, required=False)
+def create(name):
+    print("Create:", name)
+
+@create.command("*")
+@click.argument("name")
+def bot(name):
+    if name != "cog":
+        print("Bot:", name)
+
+@create.command()
+@click.argument("name")
+def cog(name):
+    print("Cog:", name)
