@@ -1,4 +1,4 @@
-from setuptools import setup
+import setuptools
 from dpycli import __version__, __tag__
 
 with open("README.md", "r", encoding="utf8") as fh:
@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf8") as fh:
 with open("requirements.txt") as f:
     requirements = f.read().splitlines()
 
-setup(
+setuptools.setup(
     name="DiscordPyCLI",
     version="{}-{}".format(__version__, __tag__) if __tag__ else __version__,
     author="Dan6erbond / Amelia-exe",
@@ -15,6 +15,8 @@ setup(
     description="A Discord.py CLI to generate boilerplate code, add dependencies and cogs.",
     long_description=long_description,
     long_description_content_type="text/markdown",
+    packages=setuptools.find_packages(include=["dpycli", "dpycli/*"]),
+    package_data={'dpycli': ['bot_structure.yaml']},
     entry_points={
         "console_scripts": [
             "dpy=dpycli.dpy_cli:main"
