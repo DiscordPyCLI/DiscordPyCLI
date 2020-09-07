@@ -15,10 +15,6 @@ def main():
 
 
 class CreateCommand(click.Group):
-    def list_commands(self, ctx):
-        print(ctx)
-        return []
-
     def get_command(self, ctx, cmd_name):
         cmd = click.Group.get_command(self, ctx, cmd_name)
         if cmd:
