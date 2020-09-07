@@ -22,7 +22,7 @@ class CogBuilder:
         with open(cog_file_path, "w+") as f:
             f.write(BOT_STRUCTURE["root"]["cogs"]["{cog_file}.py"].format(
                 bot_file=self.bot_file,
-                bot_name=self.bot_name,
+                bot_name=self.bot_name if self.bot_name != "bot" else "commands.Bot",
                 cog_name=cog_name))
 
         yaml_path = os.path.join(self.bot_path, "discord.yaml")

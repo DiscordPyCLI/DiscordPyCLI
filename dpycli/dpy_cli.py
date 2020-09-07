@@ -16,11 +16,11 @@ def main():
 
 class CreateCommand(click.Group):
     def get_command(self, ctx, cmd_name):
-        cmd = click.Group.get_command(self, ctx, cmd_name)
+        cmd = super().get_command(ctx, cmd_name)
         if cmd:
             return cmd
         else:
-            return click.Group.get_command(self, ctx, "bot")
+            return super().get_command(ctx, "bot")
 
 
 @main.command(cls=CreateCommand)
@@ -51,17 +51,26 @@ Bot creation arguments:
 def bot(ctx, basic, cog):
     BotBuilder(ctx.info_name, basic).create(cog)
 
+
 """
 Cog creation arguments:
 @ name The name of the cog in either camel, snake or kebab case.
 """
 
+
 @create.command(help="Add a cog to your Discord bot.")
 @click.argument("name", nargs=1, required=True)
 def cog(name):
-    config = DiscordBot().get_bot_config()
+    config = DiscordBot().config
+    name = "bot" if config["name"] == "bot" else get_cases(config["name"])[1]
     CogBuilder(
         os.getcwd(),
         os.path.basename(config["bot"]["main"]),
-        get_cases(config["name"])[1]
+        name
     ).add_cog(name)
+
+@main.command(help="Add a dependency to your Discord bot.")
+@click.argument("package", nargs=1, required=True)
+def add(package):
+    bot = DiscordBot()
+    bot.add_requirement(package)
