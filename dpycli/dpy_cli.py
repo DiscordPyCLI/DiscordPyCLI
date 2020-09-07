@@ -23,8 +23,15 @@ class CreateCommand(click.Group):
             return click.Group.get_command(self, ctx, "bot")
 
 
-@main.command(cls=CreateCommand, help="Run one of the creation commands for bots or cogs.")
+@main.command(cls=CreateCommand)
 def create():
+    """Create a bot or cog.
+
+    Using the command with dpy create <bot-name> will launch the bot creator, while calling
+    dpy create cog <cog-name> will create a cog in your current working directory if it
+    is a bot project folder.
+    \f
+    """
     pass
 
 
