@@ -23,7 +23,7 @@ class CreateCommand(click.Group):
             return click.Group.get_command(self, ctx, "bot")
 
 
-@main.command(cls=CreateCommand)
+@main.command(cls=CreateCommand, help="Run one of the creation commands for bots or cogs.")
 def create():
     pass
 
@@ -36,7 +36,7 @@ Bot creation arguments:
 """
 
 
-@create.command()
+@create.command(help="Create a Discord bot with additional flags.")
 @click.option("--basic", "-b", default=False, is_flag=True,
               help="Only instantiates a basic bot, does not create a class.")
 @click.option("--cog", "-c", help="Cogs to include in the bot.", multiple=True)
@@ -51,7 +51,7 @@ Cog creation arguments:
 """
 
 
-@create.command()
+@create.command(help="Add a cog to your Discord bot.")
 @click.argument("name", nargs=1, required=True)
 def cog(name):
     config = DiscordBot().get_bot_config()
