@@ -51,12 +51,10 @@ Bot creation arguments:
 def bot(ctx, basic, cog):
     BotBuilder(ctx.info_name, basic).create(cog)
 
-
 """
 Cog creation arguments:
 @ name The name of the cog in either camel, snake or kebab case.
 """
-
 
 @create.command(help="Add a cog to your Discord bot.")
 @click.argument("name", nargs=1, required=True)
