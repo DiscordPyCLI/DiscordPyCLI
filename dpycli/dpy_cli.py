@@ -1,52 +1,62 @@
-import argparse
 import os
+
+import click
 
 from .bot_builder import BotBuilder
 from .cog_builder import CogBuilder
 from .const import yaml
+from .discord_bot import DiscordBot
 from .utils import get_cases
 
-parser = argparse.ArgumentParser(description="Discord bot CLI scripts.")
-parser.add_argument("mode", help="One of 'create', 'add', or 'run'.", choices=["create", "add", "run"])
-parser.add_argument("args", help="First additional argument passed to the command.", nargs="*")
 
-"""Bot creation arguments:
+@click.group()
+def main():
+    pass
+
+
+class CreateCommand(click.Group):
+    def get_command(self, ctx, cmd_name):
+        cmd = click.Group.get_command(self, ctx, cmd_name)
+        if cmd:
+            return cmd
+        else:
+            return click.Group.get_command(self, ctx, "bot")
+
+
+@main.command(cls=CreateCommand, help="Run one of the creation commands for bots or cogs.")
+def create():
+    pass
+
+
+"""
+Bot creation arguments:
+@ name The name of the bot in either camel, snake or kebab case.
 @ --cog Adds one or more cogs to the base bot structure.
 @ --basic Only instantiates a basic bot, does not create a class.
 """
-parser.add_argument(
-    "--basic",
-    "-b",
-    help="Only instantiates a basic bot, does not create a class.",
-    nargs="?",
-    const=True,
-    default=False)
-parser.add_argument("--cog", "-c", help="Cogs to include in the bot.", nargs="*")
 
 
-class Bot:
-    def __init__(self, base_path=None):
-        self.base_path = base_path or os.getcwd()
+@create.command(help="Create a Discord bot with additional flags.")
+@click.option("--basic", "-b", default=False, is_flag=True,
+              help="Only instantiates a basic bot, does not create a class.")
+@click.option("--cog", "-c", help="Cogs to include in the bot.", multiple=True)
+@click.pass_context
+def bot(ctx, basic, cog):
+    BotBuilder(ctx.info_name, basic).create(cog)
 
-    def get_bot_config(self):
-        yaml_path = os.path.join(self.base_path, "discord.yaml")
-        with open(yaml_path) as f:
-            return yaml.load(f)
+
+"""
+Cog creation arguments:
+@ name The name of the cog in either camel, snake or kebab case.
+"""
 
 
-def main():
-    args = parser.parse_args()
-
-    if args.mode == "create":
-        if not args.args:
-            print("[ERROR:] The bot's name or a create-mode must be specified.")
-            return
-        elif args.args[0] == "cog":
-            config = Bot().get_bot_config()
-            CogBuilder(
-                os.getcwd(),
-                os.path.basename(config["bot"]["main"]),
-                get_cases(config["name"])[1]
-            ).add_cog(args.args[1])
-        else:
-            BotBuilder(args.args[0], args.basic).create(args.cog)
+@create.command(help="Add a cog to your Discord bot.")
+@click.argument("name", nargs=1, required=True)
+def cog(name):
+    config = DiscordBot().get_bot_config()
+    CogBuilder(
+        os.getcwd(),
+        os.path.basename(config["bot"]["main"]),
+        get_cases(config["name"])[1]
+    ).add_cog(name)
